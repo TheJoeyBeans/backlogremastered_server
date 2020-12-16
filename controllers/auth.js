@@ -11,15 +11,47 @@ const db = mysql.createConnection({
     multipleStatements: true
 });
 
-db.post("/register", (req, res) =>{
-    console.log(req.body);
-    console.log("HERE IS THE REQ BODY");
-    // db.query("INSERT INTO users (username, email, password) VALUES (?,?)", 
-    // [username, email, password], 
-    // (err, result) =>{
-    //     console.log(err);
-    // })
-})
+const findUser = (userInfo) =>{
+    db.query(
+        "SELECT * FROM users WHERE username = ? OR email = ? AND password = ?",
+        [userInfo.username, userInfo.email, userInfo.password],
+        (err, result) =>{
+            if(err){
+                console.log(err);
+                console.log("ERRROR^^^^");
+            }
+
+            if(result){
+                console.log(result);
+                console.log("RESULT^^^^^");
+            } else {
+                console.log('YOU GET NOTHING, GOOD DAY SIR');
+            }
+        }
+    );
+}
+
+router.post("/register", (req, res) =>{
+
+    db.query(
+        "INSERT INTO users (username, email, password) VALUES (?,?,?)", 
+        [req.body.username, req.body.email, req.body.password], 
+        (err, result) =>{
+            if(err){
+                console.log(err);
+                console.log("ERRROR^^^^");
+            }
+
+            if(result){
+                console.log(result);
+                console.log("RESULT^^^^^");
+            } else {
+                console.log('YOU GET NOTHING, GOOD DAY SIR');
+            }
+        }
+    );
+});
+
 
 db.connect((err) =>{
     if(!err){
