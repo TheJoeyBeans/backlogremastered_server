@@ -11,45 +11,81 @@ const db = mysql.createConnection({
     multipleStatements: true
 });
 
-const findUser = (userInfo) =>{
+
+//Registers user, looks for existing user and if they are not present registers a new one.
+router.post("/register", (req, res) =>{
     db.query(
         "SELECT * FROM users WHERE username = ? OR email = ? AND password = ?",
-        [userInfo.username, userInfo.email, userInfo.password],
+        [req.body.username, req.body.email, req.body.password],
         (err, result) =>{
             if(err){
                 console.log(err);
-                console.log("ERRROR^^^^");
+                res.send({
+                    responseType: "error",
+                    errorMessage: "We had a problem registering your account, please try again later."
+                });
             }
-
-            if(result){
-                console.log(result);
-                console.log("RESULT^^^^^");
-            } else {
-                console.log('YOU GET NOTHING, GOOD DAY SIR');
+            if(result && result.length <= 0){
+                db.query(
+                    "INSERT INTO users (username, email, password) VALUES (?,?,?)", 
+                    [req.body.username, req.body.email, req.body.password], 
+                    (err, result) =>{
+                        if(err){
+                            console.log(err);
+                            res.send({
+                                responseType: "error",
+                                errorMessage: "We had a problem registering your account, please try again later."
+                            });
+                        }
+                        if(result){
+                            res.send({
+                                responseType: "success",
+                                response: result
+                            });
+                        } else {
+                            res.send({
+                                responseType: "error",
+                                errorMessage: "We had a problem registering your account, please try again later."
+                            })
+                        }
+                    }
+                );
+            }else if(result && result.length > 0){
+                res.send({
+                    responseType: "error",
+                    errorMessage: "This E-Mail is already registered."
+                });
             }
         }
-    );
-}
+    )
+});
 
-router.post("/register", (req, res) =>{
-
+//Signs users into their account.
+router.post("/signIn", (req, res) =>{
     db.query(
-        "INSERT INTO users (username, email, password) VALUES (?,?,?)", 
+        "SELECT * FROM users WHERE username = ? OR email = ? AND password = ?",
         [req.body.username, req.body.email, req.body.password], 
         (err, result) =>{
             if(err){
                 console.log(err);
-                console.log("ERRROR^^^^");
+                res.send({
+                    responseType: "error",
+                    errorMessage: "We had a problem signing you in, please try again later."
+                });
             }
-
-            if(result){
-                console.log(result);
-                console.log("RESULT^^^^^");
+            if(result && result.length > 0){
+                res.send({
+                    responseType: "success",
+                    response: result
+                });
             } else {
-                console.log('YOU GET NOTHING, GOOD DAY SIR');
+                res.send({
+                    responseType: "error",
+                    errorMessage: "Incorrect E-mail or Password"
+                });
             }
         }
-    );
+    )
 });
 
 
